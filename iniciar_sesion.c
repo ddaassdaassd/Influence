@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 int main(int argc, char *argv[]) {
-	int iniciar_sesion(char* nombre, char* contrasena) { //La función "iniciar_sesion" toma dos parámetros: "nombre" y "contrasena" que son los datos de inicio de sesión del usuario que se van a verificar en la base de datos. Devuelve un valor entero que indica si el usuario existe en la base de datos o no.
+	int iniciar_sesion(char* nombre, char* contrasena) { //La funcion "iniciar_sesion" toma dos parametros: "nombre" y "contrasena" que son los datos de inicio de sesión del usuario que se van a verificar en la base de datos. Devuelve un valor entero que indica si el usuario existe en la base de datos o no.
 		MYSQL* conexion;
 		MYSQL_RES* resultado;
 		MYSQL_ROW fila;
@@ -22,8 +22,8 @@ int main(int argc, char *argv[]) {
 			exit(1);
 		}
 		
-		resultado = mysql_store_result(conexion); //Esta línea almacena los resultados de la consulta SQL en el objeto resultado.
-		fila = mysql_fetch_row(resultado); //A continuación, se llama a la función mysql_fetch_row() para obtener la siguiente fila de resultados. Esta función devuelve un puntero a una estructura MYSQL_ROW que contiene los datos de una fila de resultados. Como la consulta devuelve una sola fila con un único valor (el número de usuarios con el nombre y contraseña proporcionados), no es necesario iterar sobre las filas de resultados.
+		resultado = mysql_store_result(conexion); //Esta linea almacena los resultados de la consulta SQL en el objeto resultado.
+		fila = mysql_fetch_row(resultado); //A continuación, se llama a la función mysql_fetch_row() para obtener la siguiente fila de resultados. Esta función devuelve un puntero a una estructura MYSQL_ROW que contiene los datos de una fila de resultados. Como la consulta devuelve una sola fila con un unico valor (el número de usuarios con el nombre y contraseña proporcionados), no es necesario iterar sobre las filas de resultados.
 		existe_usuario = atoi(fila[0]); //Entonces, como esta consulta devuelve una única fila y una única columna con el número de usuarios que cumplen la condición, se obtiene el valor de esta columna usando fila[0] y se convierte a un valor entero usando atoi(). Si el valor de existe_usuario es 0, significa que no existe un usuario con el nombre y contraseña proporcionados. Si el valor de existe_usuario es 1, significa que sí existe un usuario con el nombre y contraseña proporcionados. Este valor se devuelve al final de la función iniciar_sesion().
 		
 		mysql_free_result(resultado);

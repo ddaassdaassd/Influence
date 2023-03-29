@@ -22,7 +22,7 @@ int iniciar_sesion(char* nombre, char* contrasena) { //La funcion "iniciar_sesio
 	}
 	
 	char consulta[1000];
-	sprintf(consulta, "SELECT COUNT(*) FROM usuarios WHERE nombre='%s' AND contrasena='%s'", nombre, contrasena); //Esta línea construye una consulta SQL que cuenta el número de filas en la tabla usuarios que coinciden con el nombre y la contraseña proporcionados. La consulta utiliza la función sprintf para construir la consulta utilizando los valores de los parámetros nombre y contrasena.
+	sprintf(consulta, "SELECT COUNT(*) FROM JUGADOR WHERE USERNAME='%s' AND PASSWORD='%s'", nombre, contrasena); //Esta línea construye una consulta SQL que cuenta el número de filas en la tabla usuarios que coinciden con el nombre y la contraseña proporcionados. La consulta utiliza la función sprintf para construir la consulta utilizando los valores de los parámetros nombre y contrasena.
 	
 	if (mysql_query(conexion, consulta)) { //Se ejecuta la consulta utilizando la función "mysql_query" y se verifica si hubo algún error en la ejecución de la consulta. Si hay un error, se imprime un mensaje de error y se termina el programa.
 		fprintf(stderr, "%s\n", mysql_error(conexion));
@@ -57,6 +57,31 @@ int registrarse(char* usuario, char* contrasena)
 		mysql_close(conexion);
 		return resultado; // devolver valor predeterminado de resultado (0)
 	}
+	
+	// crear consulta para saber cuantos jugadores hay
+	char consulta0[200];
+	sprintf(consulta0, "SELECT COUNT(*) FROM JUGADOR");
+	// ejecutar consulta
+	if (mysql_query(conexion, consulta0))
+	{
+		printf("Error al ejecutar la consulta0: %s\n", mysql_error(conexion));
+		mysql_close(conexion);
+		return resultado; // devolver valor predeterminado de resultado (0)
+	}
+	MYSQL_RES* resultados0 = mysql_use_result(conexion);
+	if (resultados0 == NULL)
+	{
+		printf("Error al obtener los resultados de la consulta0: %s\n", mysql_error(conexion));
+		mysql_close(conexion);
+		return resultado; // devolver valor predeterminado de resultado (0)
+	}
+	MYSQL_ROW fila0 = mysql_fetch_row(resultados0);
+	int num_filas0 = mysql_num_rows(resultados0);
+	int num_jugadores = atoi(fila0[0]);
+	
+	mysql_free_result(resultados0); // liberar la memoria de los resultados de la consulta1
+	
+	
 	
 	// crear consulta SQL para comprobar si el usuario ya existe en la base de datos
 	char consulta1[200];
@@ -101,13 +126,17 @@ int registrarse(char* usuario, char* contrasena)
 		mysql_close(conexion);
 		return resultado; // devolver valor predeterminado de resultado (0)
 	}
+	else{
+		mysql_free_result(resultados1);  // liberar la memoria de los resultados de la consulta1
+
+	}
 	
 	// crear consulta SQL para insertar el nuevo usuario y la contrase�a en la base de datos
 	char consulta2[200];
-	sprintf(consulta2, "INSERT INTO usuarios (nombre, contrasena) VALUES ('%s', '%s')", usuario, contrasena);
+	sprintf(consulta2, "INSERT INTO JUGADOR (ID, USERNAME, PASSWORD) VALUES ('%d', '%s', '%s')",num_jugadores, usuario, contrasena);
 	
 	// ejecutar la consulta2
-	if (mysql_query(conexion, consulta2))
+	if (mysql_query(conexion, consulta2)) //el error esta aqui aun que la consulata funciona
 	{
 		printf("Error al ejecutar la consulta2: %s\n", mysql_error(conexion));
 		mysql_free_result(resultados1);
@@ -120,14 +149,14 @@ int registrarse(char* usuario, char* contrasena)
 	
 	resultado = 1; // asignar 1 a la variable resultado para indicar que el registro se realiz� correctamente
 	
-	mysql_free_result(resultados1); // liberar la memoria de los resultados de la consulta1
+	//mysql_free_result(resultados1); // liberar la memoria de los resultados de la consulta1
 	mysql_close(conexion); // cerrar la conexi�n a la base de datos
 	
 	return resultado; // devolver el valor de la variable resultado (1 si el registro se realiz� correctamente, 0 si hubo alg�n error)
 }
 
 	
-using namespace std;
+//using namespace std;
 
 int main (int argc, char *argv[]) {
 	
@@ -149,7 +178,7 @@ int main (int argc, char *argv[]) {
 	//htonl formatea el numero que recibe al formato necesario
 	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
 	// escucharemos en el port 9070
-	serv_adr.sin_port = htons(9000);
+	serv_adr.sin_port = htons(9010);
 	if (bind(sock_listen, (struct sockaddr *) &serv_adr, sizeof(serv_adr)) < 0)
 		printf ("Error al bind");
 	//La cola de peticiones pendientes
@@ -202,20 +231,20 @@ int main (int argc, char *argv[]) {
 					
 				else if (inicioSesion == 0) // El usuario y la contrase�a no coinciden
 					sprintf(respuesta, "INCORRECTO");
-				else if (inicioSesion == 2) // El usuario ya existe
-					sprintf(respuesta, "EXISTE");
+				else // Hay un error
+					sprintf(respuesta, "ERROR");
 			}
 			else if (codigo == 2)
 			{
-				//int registro = registrarse(usuario,contrasenya); // funcion que devuelve 1 se todo va bien 0 si hay error 2 si el usuario ya existe
-				int registro = 1;
+				int registro = registrarse(usuario,contrasenya); // funcion que devuelve 1 se todo va bien 0 si hay error 2 si el usuario ya existe
+				//int registro = 1;
 				if (registro == 1) // Se ha registrado
 					sprintf (respuesta, "BIEN");
 				
-				else if (registro == 0) // ERROR
-					sprintf(respuesta, "ERROR");
-				else if (registro == 2) // El usuario ya existe
+				else if (registro == 0) // El usuario ya existe
 					sprintf(respuesta, "EXISTE");
+				else// El usuario ya existe
+					sprintf(respuesta, "ERROR");
 			}
 		}
 			

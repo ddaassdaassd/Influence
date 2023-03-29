@@ -29,7 +29,7 @@ namespace WindowsFormsApplication1
             try
             {
 
-                if (String.IsNullOrEmpty(textBoxUsuario.Text) && String.IsNullOrEmpty(textBoxContraseña.Text)) // nome she ficat nom o contra  avisame
+                if (String.IsNullOrEmpty(textBoxUsuario.Text) || String.IsNullOrEmpty(textBoxContraseña.Text)) // nome she ficat nom o contra  avisame
                 {
                     MessageBox.Show("Escribe un nombre y una contraseña");
                 }
@@ -58,7 +58,7 @@ namespace WindowsFormsApplication1
                         MessageBox.Show("Se ha iniciado sesion");
 
 
-                    else if (mensaje == "EXISTE")// nom contra incorrecte
+                    else if (mensaje == "INCORRECTO")// nom contra incorrecte
                         MessageBox.Show("No se encuentra al usuario/contraseña incorrecta");
 
                     else if (mensaje == "ERROR")// ERROR
@@ -87,12 +87,17 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                if ((textBoxUsuario.Text != null) || (textBoxContraseña.Text != null)) // nome she ficat nom o contra  avisame
+                if (String.IsNullOrEmpty(textBoxUsuario.Text) || String.IsNullOrEmpty(textBoxContraseña.Text)) // nome she ficat nom o contra  avisame
                 {
+                    MessageBox.Show("Escribe un nombre y una contraseña");
+                }
+                else
+                {
+
 
                     // Creamos un IPEndPoint con el ip del servidor y puerto del sevidor al que conectamos
                     IPAddress direc = IPAddress.Parse("192.168.56.102");
-                    IPEndPoint ipep = new IPEndPoint(direc, 9050);
+                    IPEndPoint ipep = new IPEndPoint(direc, 9010);
 
                     //Creamos el socket 
                     server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -125,9 +130,7 @@ namespace WindowsFormsApplication1
                     server.Shutdown(SocketShutdown.Both);
                     server.Close();
                 }
-                else
-                    MessageBox.Show("Escribe un nombre y una contraseña");
-
+                
             }
             catch (SocketException ex)
             {
