@@ -13,11 +13,13 @@ int iniciar_sesion(char* nombre, char* contrasena) { //La funcion "iniciar_sesio
 	MYSQL* conexion;
 	MYSQL_RES* resultado;
 	MYSQL_ROW fila;
-	int existe_usuario = 0;
+	int respuesta = 0;
 	
-	conexion = mysql_init(NULL); //Se inicializa la conexi√≥n a la base de datos utilizando la funci√≥n "mysql_init". En caso de que la conexi√≥n no se pueda establecer, se imprime un mensaje de error y se termina el programa.
+	
+	conexion = mysql_init(NULL); //Se inicializa la conexion a la base de datos utilizando la funcion "mysql_init". En caso de que la conexion no se pueda establecer, se imprime un mensaje de error y se termina el programa.
 	if (mysql_real_connect(conexion, "localhost", "root", "mysql", "juego", 0, NULL, 0) == NULL) {
 		fprintf(stderr, "%s\n", mysql_error(conexion));
+		return respuesta;
 		exit(1);
 	}
 	
@@ -26,19 +28,33 @@ int iniciar_sesion(char* nombre, char* contrasena) { //La funcion "iniciar_sesio
 	
 	if (mysql_query(conexion, consulta)) { //Se ejecuta la consulta utilizando la funci√≥n "mysql_query" y se verifica si hubo alg√∫n error en la ejecuci√≥n de la consulta. Si hay un error, se imprime un mensaje de error y se termina el programa.
 		fprintf(stderr, "%s\n", mysql_error(conexion));
+		return respuesta;
 		exit(1);
 	}
+
+
 	
 	resultado = mysql_store_result(conexion); //Esta linea almacena los resultados de la consulta SQL en el objeto resultado.
-	fila = mysql_fetch_row(resultado); //A continuaci√≥n, se llama a la funci√≥n mysql_fetch_row() para obtener la siguiente fila de resultados. Esta funci√≥n devuelve un puntero a una estructura MYSQL_ROW que contiene los datos de una fila de resultados. Como la consulta devuelve una sola fila con un unico valor (el n√∫mero de usuarios con el nombre y contrase√±a proporcionados), no es necesario iterar sobre las filas de resultados.
-	existe_usuario = atoi(fila[0]); //Entonces, como esta consulta devuelve una √∫nica fila y una √∫nica columna con el n√∫mero de usuarios que cumplen la condici√≥n, se obtiene el valor de esta columna usando fila[0] y se convierte a un valor entero usando atoi(). Si el valor de existe_usuario es 0, significa que no existe un usuario con el nombre y contrase√±a proporcionados. Si el valor de existe_usuario es 1, significa que s√≠ existe un usuario con el nombre y contrase√±a proporcionados. Este valor se devuelve al final de la funci√≥n iniciar_sesion().
+	fila = mysql_fetch_row(resultado); //A continuacion, se llama a la funci√≥n mysql_fetch_row() para obtener la siguiente fila de resultados. Esta funci√≥n devuelve un puntero a una estructura MYSQL_ROW que contiene los datos de una fila de resultados. Como la consulta devuelve una sola fila con un unico valor (el n√∫mero de usuarios con el nombre y contrase√±a proporcionados), no es necesario iterar sobre las filas de resultados.
+	int exsiste_usuario = atoi(fila[0]); //Entonces, como esta consulta devuelve una √∫nica fila y una √∫nica columna con el n√∫mero de usuarios que cumplen la condici√≥n, se obtiene el valor de esta columna usando fila[0] y se convierte a un valor entero usando atoi(). Si el valor de existe_usuario es 0, significa que no existe un usuario con el nombre y contrase√±a proporcionados. Si el valor de existe_usuario es 1, significa que s√≠ existe un usuario con el nombre y contrase√±a proporcionados. Este valor se devuelve al final de la funci√≥n iniciar_sesion().
+	
+	
+	if (exsiste_usuario == 0)
+	{
+		respuesta = 1;
+
+	}
+	else if (exsiste_usuario == 1)
+	{
+		respuesta = 2;
+	}
 	
 	mysql_free_result(resultado);
 	mysql_close(conexion);
-	
-	return existe_usuario;
-}
 
+	return respuesta;
+}
+///--------------------------------------------------------------------------------------------------
 int registrarse(char* usuario, char* contrasena)
 {
 	MYSQL* conexion = mysql_init(NULL); // inicializar objeto de conexiÛn a MySQL
@@ -124,40 +140,114 @@ int registrarse(char* usuario, char* contrasena)
 		printf("El usuario ya existe en la base de datos\n");
 		mysql_free_result(resultados1);
 		mysql_close(conexion);
+		resultado = 1;
 		return resultado; // devolver valor predeterminado de resultado (0)
 	}
 	else{
 		mysql_free_result(resultados1);  // liberar la memoria de los resultados de la consulta1
-
+		
 	}
 	
-	// crear consulta SQL para insertar el nuevo usuario y la contraseÒa en la base de datos
-	char consulta2[200];
-	sprintf(consulta2, "INSERT INTO JUGADOR (ID, USERNAME, PASSWORD) VALUES ('%d', '%s', '%s')",num_jugadores, usuario, contrasena);
-	
-	// ejecutar la consulta2
-	if (mysql_query(conexion, consulta2)) //el error esta aqui aun que la consulata funciona
+	if (resultado != 1)
 	{
-		printf("Error al ejecutar la consulta2: %s\n", mysql_error(conexion));
-		mysql_free_result(resultados1);
-		mysql_close(conexion);
-		return resultado; // devolver valor predeterminado de resultado (0)
+		// crear consulta SQL para insertar el nuevo usuario y la contraseÒa en la base de datos
+		char consulta2[200];
+		sprintf(consulta2, "INSERT INTO JUGADOR (ID, USERNAME, PASSWORD) VALUES ('%d', '%s', '%s')",num_jugadores, usuario, contrasena);
+		
+		// ejecutar la consulta2
+		if (mysql_query(conexion, consulta2)) //el error esta aqui aun que la consulata funciona
+		{
+			printf("Error al ejecutar la consulta2: %s\n", mysql_error(conexion));
+			mysql_free_result(resultados1);
+			mysql_close(conexion);
+			return resultado; // devolver valor predeterminado de resultado (0)
+		}
+		else
+			resultado = 2; // asignar 2 a la variable resultado para indicar que el registro se realizÛ correctamente
+		
+		// En el cÛdigo que mostraste, no hay un else despuÈs del if porque no es necesario en este caso. Si la funciÛn mysql_query() devuelve un valor diferente de 0, se asume que hubo un error al ejecutar la consulta, por lo que el cÛdigo dentro del if se ejecuta y devuelve el valor predeterminado de resultado (0).
+		// Si la funciÛn mysql_query() devuelve un valor igual a 0, se asume que la consulta se ejecutÛ correctamente, por lo que el cÛdigo dentro del if no se ejecuta y se contin˙a con el resto del cÛdigo. En este caso, no es necesario un else porque no hay ninguna acciÛn adicional que realizar si la consulta se ejecuta correctamente.
+		
+		
+		//mysql_free_result(resultados1); // liberar la memoria de los resultados de la consulta1
+		mysql_close(conexion); // cerrar la conexiÛn a la base de datos
+		
+		return resultado; // devolver el valor de la variable resultado (1 si el registro se realizÛ correctamente, 0 si hubo alg˙n error)
+	}
+}
+///--------------------------------------------------------------------------------------
+int consulta_1()
+{
+	MYSQL* conexion;
+	MYSQL_RES* resultado;
+	MYSQL_ROW fila;
+	int respuesta = -1;
+	
+	
+	conexion = mysql_init(NULL); //Se inicializa la conexion a la base de datos utilizando la funcion "mysql_init". En caso de que la conexion no se pueda establecer, se imprime un mensaje de error y se termina el programa.
+	if (mysql_real_connect(conexion, "localhost", "root", "mysql", "juego", 0, NULL, 0) == NULL) {
+		fprintf(stderr, "%s\n", mysql_error(conexion));
+		return respuesta;
+		exit(1);
 	}
 	
-	// En el cÛdigo que mostraste, no hay un else despuÈs del if porque no es necesario en este caso. Si la funciÛn mysql_query() devuelve un valor diferente de 0, se asume que hubo un error al ejecutar la consulta, por lo que el cÛdigo dentro del if se ejecuta y devuelve el valor predeterminado de resultado (0).
-	// Si la funciÛn mysql_query() devuelve un valor igual a 0, se asume que la consulta se ejecutÛ correctamente, por lo que el cÛdigo dentro del if no se ejecuta y se contin˙a con el resto del cÛdigo. En este caso, no es necesario un else porque no hay ninguna acciÛn adicional que realizar si la consulta se ejecuta correctamente.
+	char consulta[200];
+	sprintf(consulta, "SELECT COUNT(*) FROM JUGADOR");
 	
-	resultado = 1; // asignar 1 a la variable resultado para indicar que el registro se realizÛ correctamente
+	if (mysql_query(conexion, consulta)) { //Se ejecuta la consulta utilizando la funcion "mysql_query" y se verifica si hubo alg√∫n error en la ejecuci√≥n de la consulta. Si hay un error, se imprime un mensaje de error y se termina el programa.
+		fprintf(stderr, "%s\n", mysql_error(conexion));
+		return respuesta;
+		exit(1);
+	}
 	
-	//mysql_free_result(resultados1); // liberar la memoria de los resultados de la consulta1
-	mysql_close(conexion); // cerrar la conexiÛn a la base de datos
+	resultado = mysql_store_result(conexion); //Esta linea almacena los resultados de la consulta SQL en el objeto resultado.
+	fila = mysql_fetch_row(resultado); //A continuacion, se llama a la funci√≥n mysql_fetch_row() para obtener la siguiente fila de resultados. Esta funci√≥n devuelve un puntero a una estructura MYSQL_ROW que contiene los datos de una fila de resultados. Como la consulta devuelve una sola fila con un unico valor (el n√∫mero de usuarios con el nombre y contrase√±a proporcionados), no es necesario iterar sobre las filas de resultados.
+	int usuarios= atoi(fila[0]); //Entonces, como esta consulta devuelve una √∫nica fila y una √∫nica columna con el n√∫mero de usuarios que cumplen la condici√≥n, se obtiene el valor de esta columna usando fila[0] y se convierte a un valor entero usando atoi(). Si el valor de existe_usuario es 0, significa que no existe un usuario con el nombre y contrase√±a proporcionados. Si el valor de existe_usuario es 1, significa que s√≠ existe un usuario con el nombre y contrase√±a proporcionados. Este valor se devuelve al final de la funci√≥n iniciar_sesion().
 	
-	return resultado; // devolver el valor de la variable resultado (1 si el registro se realizÛ correctamente, 0 si hubo alg˙n error)
+	mysql_free_result(resultado);
+	mysql_close(conexion);
+	
+	if (respuesta != -1);
+		return usuarios;
+}
+///--------------------------------------------------------------------------------------
+int consulta_2(char *usuario)
+{
+	MYSQL* conexion;
+	MYSQL_RES* resultado;
+	MYSQL_ROW fila;
+	int respuesta = -1;
+	
+	
+	conexion = mysql_init(NULL); //Se inicializa la conexion a la base de datos utilizando la funcion "mysql_init". En caso de que la conexion no se pueda establecer, se imprime un mensaje de error y se termina el programa.
+	if (mysql_real_connect(conexion, "localhost", "root", "mysql", "juego", 0, NULL, 0) == NULL) {
+		fprintf(stderr, "%s\n", mysql_error(conexion));
+		return respuesta;
+		exit(1);
+	}
+	
+	char consulta[200];
+	sprintf(consulta, "SELECT COUNT(*) FROM JUGADOR WHERE USERNAME='%s'", usuario);
+	
+	if (mysql_query(conexion, consulta)) { //Se ejecuta la consulta utilizando la funcion "mysql_query" y se verifica si hubo alg√∫n error en la ejecuci√≥n de la consulta. Si hay un error, se imprime un mensaje de error y se termina el programa.
+		fprintf(stderr, "%s\n", mysql_error(conexion));
+		return respuesta;
+		exit(1);
+	}
+	
+	resultado = mysql_store_result(conexion); //Esta linea almacena los resultados de la consulta SQL en el objeto resultado.
+	fila = mysql_fetch_row(resultado); //A continuacion, se llama a la funci√≥n mysql_fetch_row() para obtener la siguiente fila de resultados. Esta funci√≥n devuelve un puntero a una estructura MYSQL_ROW que contiene los datos de una fila de resultados. Como la consulta devuelve una sola fila con un unico valor (el n√∫mero de usuarios con el nombre y contrase√±a proporcionados), no es necesario iterar sobre las filas de resultados.
+	int usuarios= atoi(fila[0]); //Entonces, como esta consulta devuelve una √∫nica fila y una √∫nica columna con el n√∫mero de usuarios que cumplen la condici√≥n, se obtiene el valor de esta columna usando fila[0] y se convierte a un valor entero usando atoi(). Si el valor de existe_usuario es 0, significa que no existe un usuario con el nombre y contrase√±a proporcionados. Si el valor de existe_usuario es 1, significa que s√≠ existe un usuario con el nombre y contrase√±a proporcionados. Este valor se devuelve al final de la funci√≥n iniciar_sesion().
+	
+	mysql_free_result(resultado);
+	mysql_close(conexion);
+	
+	if (respuesta != -1);
+	return usuarios;
 }
 
-	
+///----------------------------------------------------------------------------------
 //using namespace std;
-
 int main (int argc, char *argv[]) {
 	
 	int sock_conn, sock_listen, ret;
@@ -177,8 +267,8 @@ int main (int argc, char *argv[]) {
 	// asocia el socket a cualquiera de las IP de la m?quina. 
 	//htonl formatea el numero que recibe al formato necesario
 	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
-	// escucharemos en el port 9070
-	serv_adr.sin_port = htons(9010);
+	// escucharemos en el port x
+	serv_adr.sin_port = htons(9070);
 	if (bind(sock_listen, (struct sockaddr *) &serv_adr, sizeof(serv_adr)) < 0)
 		printf ("Error al bind");
 	//La cola de peticiones pendientes
@@ -208,11 +298,13 @@ int main (int argc, char *argv[]) {
 
 		char *p = strtok(peticion, "/");
 		int codigo = atoi (p);
-			
-		if (p == 0)
+		
+		printf ("%d\n",codigo);
+		
+		if (codigo == 0)
 			finConexion = 1;
 				
-		else
+		else if (codigo== 1 || codigo == 2)
 		{
 			p = strtok (NULL, "/");
 			char usuario[20];
@@ -226,10 +318,10 @@ int main (int argc, char *argv[]) {
 			{
 				int inicioSesion = iniciar_sesion(usuario,contrasenya); // funcion que devuelve 1 se todo va bien 0 si hay error 2 si el usuario y la contraseÒa no coinciden
 				//int inicioSesion = 1;
-				if (inicioSesion == 1) // El usuario y la contraaeÒa coinciden
+				if (inicioSesion == 2) // El usuario y la contraaeÒa coinciden
 					sprintf (respuesta, "BIEN");
 					
-				else if (inicioSesion == 0) // El usuario y la contraseÒa no coinciden
+				else if (inicioSesion == 1) // El usuario y la contraseÒa no coinciden
 					sprintf(respuesta, "INCORRECTO");
 				else // Hay un error
 					sprintf(respuesta, "ERROR");
@@ -237,16 +329,41 @@ int main (int argc, char *argv[]) {
 			else if (codigo == 2)
 			{
 				int registro = registrarse(usuario,contrasenya); // funcion que devuelve 1 se todo va bien 0 si hay error 2 si el usuario ya existe
-				//int registro = 1;
-				if (registro == 1) // Se ha registrado
+				if (registro == 2) // Se ha registrado
 					sprintf (respuesta, "BIEN");
 				
-				else if (registro == 0) // El usuario ya existe
+				else if (registro == 1) // El usuario ya existe
 					sprintf(respuesta, "EXISTE");
-				else// El usuario ya existe
+				else// Error
 					sprintf(respuesta, "ERROR");
 			}
+			
 		}
+		printf ("%d\n",codigo);
+		if (codigo == 3)
+		{
+			int consulta1 = consulta_1();
+			sprintf(respuesta, "%d", consulta1);
+			printf("%d",consulta1);
+		}
+		if (codigo == 4)
+		{
+			p = strtok (NULL, "/");
+			char usuario[20];
+			strcpy (usuario, p);
+			int consulta2 = consulta_2(usuario);
+			
+			if (consulta2 == 1)
+				sprintf(respuesta, "SI");
+			if (consulta2 == 0)
+				sprintf(respuesta, "NO");
+
+		}
+		
+
+		
+	
+
 			
 			printf("%s",respuesta);
 			write (sock_conn,respuesta, strlen(respuesta));
