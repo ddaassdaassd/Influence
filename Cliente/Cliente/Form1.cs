@@ -14,6 +14,7 @@ namespace WindowsFormsApplication1
     public partial class Form1 : Form
     {
         Socket server;
+        int port = 9060;
         public Form1()
         {
             InitializeComponent();
@@ -37,7 +38,7 @@ namespace WindowsFormsApplication1
                 {
                     // Creamos un IPEndPoint con el ip del servidor y puerto del sevidor al que conectamos
                     IPAddress direc = IPAddress.Parse("192.168.56.102");
-                    IPEndPoint ipep = new IPEndPoint(direc, 9070);
+                    IPEndPoint ipep = new IPEndPoint(direc, port);
 
                     //Creamos el socket 
                     server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -55,7 +56,10 @@ namespace WindowsFormsApplication1
                     mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
 
                     if (mensaje == "BIEN") //ha anat be obram un form per fer peticions
+                    {
                         MessageBox.Show("Se ha iniciado sesion");
+
+                    }
 
 
                     else if (mensaje == "INCORRECTO")// nom contra incorrecte
@@ -69,6 +73,14 @@ namespace WindowsFormsApplication1
                     this.BackColor = Color.Gray;
                     server.Shutdown(SocketShutdown.Both);
                     server.Close();
+                    MessageBox.Show("Te has desconectado");
+                    if (mensaje == "BIEN") //ha anat be obram un form per fer peticions
+                    {
+                        string Jugador = textBoxUsuario.Text;
+                        Form2 form2 = new Form2(Jugador);
+                        form2.Show();
+
+                    }
                 }
                  
 
@@ -97,7 +109,7 @@ namespace WindowsFormsApplication1
 
                     // Creamos un IPEndPoint con el ip del servidor y puerto del sevidor al que conectamos
                     IPAddress direc = IPAddress.Parse("192.168.56.102");
-                    IPEndPoint ipep = new IPEndPoint(direc, 9070);
+                    IPEndPoint ipep = new IPEndPoint(direc, port);
 
                     //Creamos el socket 
                     server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -147,7 +159,7 @@ namespace WindowsFormsApplication1
 
                 // Creamos un IPEndPoint con el ip del servidor y puerto del sevidor al que conectamos
                 IPAddress direc = IPAddress.Parse("192.168.56.102");
-                IPEndPoint ipep = new IPEndPoint(direc, 9070);
+                IPEndPoint ipep = new IPEndPoint(direc, port);
 
                 //Creamos el socket 
                 server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -195,7 +207,7 @@ namespace WindowsFormsApplication1
 
                     // Creamos un IPEndPoint con el ip del servidor y puerto del sevidor al que conectamos
                     IPAddress direc = IPAddress.Parse("192.168.56.102");
-                    IPEndPoint ipep = new IPEndPoint(direc, 9070);
+                    IPEndPoint ipep = new IPEndPoint(direc, port);
 
                     //Creamos el socket 
                     server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);

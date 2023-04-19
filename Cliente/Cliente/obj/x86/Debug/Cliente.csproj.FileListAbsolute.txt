@@ -6,3 +6,4 @@ C:\Users\David\UNI\SO_1\share\Proyecto\Cliente\Cliente\bin\Debug\Cliente.exe
 C:\Users\David\UNI\SO_1\share\Proyecto\Cliente\Cliente\bin\Debug\Cliente.pdb
 C:\Users\David\UNI\SO_1\share\Proyecto\Cliente\Cliente\obj\x86\Debug\Cliente.exe
 C:\Users\David\UNI\SO_1\share\Proyecto\Cliente\Cliente\obj\x86\Debug\Cliente.pdb
+C:\Users\David\UNI\SO_1\share\Proyecto\Cliente\Cliente\obj\x86\Debug\WindowsFormsApplication1.Form2.resources
