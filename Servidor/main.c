@@ -8,6 +8,18 @@
 #include <mysql/mysql.h>
 #include <pthread.h>
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+typedef struct{
+	char Nombre[20];
+}Tuser;
+
+typedef struct{
+	Tuser Conectados[50];
+	int num;
+}Tconectados;
+
+Tconectados conectados;
 
 
 int iniciar_sesion(char* nombre, char* contrasena) { //La funcion "iniciar_sesion" toma dos parametros: "nombre" y "contrasena" que son los datos de inicio de sesión del usuario que se van a verificar en la base de datos. Devuelve un valor entero que indica si el usuario existe en la base de datos o no.
@@ -279,9 +291,7 @@ void *AtenderCliente (void *socket)
 		
 		char *p = strtok(peticion, "/");
 		int codigo = atoi (p);
-		
-		printf ("%d\n",codigo);
-		
+			
 		if (codigo == 0)
 			finConexion = 1;
 		
@@ -320,7 +330,7 @@ void *AtenderCliente (void *socket)
 			}
 			
 		}
-		printf ("%d\n",codigo);
+		
 		if (codigo == 3)
 		{
 			int consulta1 = consulta_1();
@@ -342,6 +352,48 @@ void *AtenderCliente (void *socket)
 			
 		}
 		
+		//Quien se ha conectado?
+		if (codigo == 5)
+		{
+			pthread_mutex_lock( &mutex );
+			int cont = 0;
+			int encontrado = 0;
+			p = strtok (NULL, "/");
+			while (cont < 50 && encontrado == 0){
+				if (strcmp(conectados.Conectados[cont].Nombre,"NULL")){
+					strcpy (conectados.Conectados[cont].Nombre, p);
+					encontrado = 1;
+				}
+				cont=cont+1;
+			}
+			pthread_mutex_unlock( &mutex );
+			//no
+			char usuario[20];
+			strcpy (usuario, p);
+			sprintf(respuesta, "%s", usuario);			
+	
+		}
+		//Quien se ha desconectado?
+		if (codigo == 6)
+		{
+			pthread_mutex_lock( &mutex );
+			int cont = 0;
+			int encontrado = 0;
+			p = strtok (NULL, "/");
+			while (cont < 50 && encontrado == 0){
+				if (strcmp(p,conectados.Conectados[cont].Nombre)==0){
+					strcpy(conectados.Conectados[cont].Nombre, "NULL");
+					encontrado = 1;
+				}
+				cont=cont+1;
+				
+			}
+			pthread_mutex_unlock( &mutex );
+			
+		}
+		
+		
+	
 		printf("%s",respuesta);
 		write (sock_conn,respuesta, strlen(respuesta));
 		
@@ -350,11 +402,14 @@ void *AtenderCliente (void *socket)
 		break;
 	}
 }
+///--------------------------------------------------------------------------------
+
 
 
 ///----------------------------------------------------------------------------------
 //using namespace std;
 int main (int argc, char *argv[]) {
+
 	int sock_conn, sock_listen;
 	struct sockaddr_in serv_adr;
 	
@@ -372,7 +427,7 @@ int main (int argc, char *argv[]) {
 	//htonl formatea el numero que recibe al formato necesario
 	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
 	// escucharemos en el port x
-	serv_adr.sin_port = htons(9060);
+	serv_adr.sin_port = htons(9070);
 	if (bind(sock_listen, (struct sockaddr *) &serv_adr, sizeof(serv_adr)) < 0)
 		printf ("Error al bind");
 	//La cola de peticiones pendientes
@@ -383,7 +438,7 @@ int main (int argc, char *argv[]) {
 	int sockets[100];
 	pthread_t thread;
 	i=0;
-	
+
 	for(;;){
 		printf ("Escuchando\n");
 		

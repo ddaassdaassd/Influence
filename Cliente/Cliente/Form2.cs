@@ -14,7 +14,7 @@ namespace WindowsFormsApplication1
     public partial class Form2 : Form
     {
         Socket server;
-        int port = 9060;
+        int port = 9070;
         string Jugador;
         public Form2(string Jugador)
         {
@@ -36,6 +36,19 @@ namespace WindowsFormsApplication1
             server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             server.Connect(ipep);//Intentamos conectar el socket
             MessageBox.Show("Conectado");
+
+            string mensaje = "5/" + this.Jugador;
+            // Enviamos al servidor la consulta
+            byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
+            server.Send(msg);
+
+            //Recibimos la respuesta del servidor
+            byte[] msg2 = new byte[80];
+            server.Receive(msg2);
+            mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
+            label1.Text = mensaje;
+
+
         }
 
         private void buttonConsulta1_Click(object sender, EventArgs e)
@@ -54,12 +67,7 @@ namespace WindowsFormsApplication1
                 mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
 
                 MessageBox.Show(mensaje);
-
-                // Se terminó el servicio. 
-                // Nos desconectamos
-
-                this.BackColor = Color.Gray;
-
+               
 
             }
             catch (SocketException ex)
@@ -75,11 +83,17 @@ namespace WindowsFormsApplication1
             if (MessageBox.Show("¿Está seguro de que desea salir?", "Confirmar salida", MessageBoxButtons.YesNo) == DialogResult.No)
             {
                 e.Cancel = true; // cancela el cierre de la ventana
+
+                string mensaje = "6/" + this.Jugador;
+                // Enviamos al servidor la consulta
+                byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
+                server.Send(msg);
+
+                // Nos desconectamos
                 server.Shutdown(SocketShutdown.Both);
                 server.Close();
             }
         }
-
         
     }
 }

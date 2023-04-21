@@ -14,7 +14,7 @@ namespace WindowsFormsApplication1
     public partial class Form1 : Form
     {
         Socket server;
-        int port = 9060;
+        int port = 9070;
         public Form1()
         {
             InitializeComponent();
@@ -57,7 +57,9 @@ namespace WindowsFormsApplication1
 
                     if (mensaje == "BIEN") //ha anat be obram un form per fer peticions
                     {
-                        MessageBox.Show("Se ha iniciado sesion");
+                        string Jugador = textBoxUsuario.Text;
+                        Form2 form2 = new Form2(Jugador);
+                        form2.Show();
 
                     }
 
@@ -73,14 +75,7 @@ namespace WindowsFormsApplication1
                     this.BackColor = Color.Gray;
                     server.Shutdown(SocketShutdown.Both);
                     server.Close();
-                    MessageBox.Show("Te has desconectado");
-                    if (mensaje == "BIEN") //ha anat be obram un form per fer peticions
-                    {
-                        string Jugador = textBoxUsuario.Text;
-                        Form2 form2 = new Form2(Jugador);
-                        form2.Show();
-
-                    }
+                    
                 }
                  
 
